@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binary Tree Level Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f0f4ff, #c3dafe);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 1.5rem;
+    }
+    label, input, button, select {
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    input, select {
+      padding: 0.75rem;
+      border: 2px solid #ccc;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover { background-color: #4338ca; }
+    .result {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2563eb;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Binary Tree Level Calculator</h1>
+    <p>Enter values separated by commas (e.g., 1,2,3,null,null,4,5) to define a binary tree in level-order.</p>
+    <label for="treeInput">Tree Input:</label>
+    <input type="text" id="treeInput" placeholder="1,2,3,null,null,4,5" />
+
+    <label for="treeType">Select Tree Type:</label>
+    <select id="treeType">
+      <option value="binary">Binary Tree</option>
+      <option value="bst">Binary Search Tree</option>
+    </select>
+
+    <label for="methodSelect">Select Approach:</label>
+    <select id="methodSelect">
+      <option value="recursive">Recursive (Divide & Conquer)</option>
+      <option value="iterative">Iterative (Level-order BFS)</option>
+    </select>
+
+    <button onclick="calculateDepth()">Calculate Depth</button>
+    <div class="result" id="result"></div>
+    <p><strong>Time Complexity:</strong> O(n)</p>
+  </div>
+
+  <script>
+    function buildBinaryTree(nodes) {
+      if (!nodes.length || nodes[0] === "null") return null;
+      const root = { value: nodes[0], left: null, right: null };
+      let queue = [root];
+      let i = 1;
+
+      while (i < nodes.length) {
+        const current = queue.shift();
+        if (nodes[i] !== "null") {
+          current.left = { value: nodes[i], left: null, right: null };
+          queue.push(current.left);
+        }
+        i++;
+        if (i < nodes.length && nodes[i] !== "null") {
+          current.right = { value: nodes[i], left: null, right: null };
+          queue.push(current.right);
+        }
+        i++;
+      }
+      return root;
+    }
+
+    function insertBST(root, value) {
+      if (value === "null") return root;
+      value = parseInt(value);
+      if (!root) return { value, left: null, right: null };
+      if (value < root.value) {
+        root.left = insertBST(root.left, value);
+      } else {
+        root.right = insertBST(root.right, value);
+      }
+      return root;
+    }
+
+    function buildBST(nodes) {
+      let root = null;
+      for (let val of nodes) {
+        if (val !== "null") root = insertBST(root, val);
+      }
+      return root;
+    }
+
+    function countLevelsRecursive(node) {
+      if (node === null) return 0;
+      const left = countLevelsRecursive(node.left);
+      const right = countLevelsRecursive(node.right);
+      return 1 + Math.max(left, right);
+    }
+
+    function countLevelsIterative(root) {
+      if (!root) return 0;
+      let queue = [root];
+      let levels = 0;
+      while (queue.length > 0) {
+        let size = queue.length;
+        levels++;
+        for (let i = 0; i < size; i++) {
+          let node = queue.shift();
+          if (node.left) queue.push(node.left);
+          if (node.right) queue.push(node.right);
+        }
+      }
+      return levels;
+    }
+
+    function calculateDepth() {
+      const input = document.getElementById("treeInput").value;
+      const method = document.getElementById("methodSelect").value;
+      const treeType = document.getElementById("treeType").value;
+      const values = input.split(',').map(val => val.trim());
+
+      let root = null;
+      if (treeType === "binary") {
+        root = buildBinaryTree(values);
+      } else {
+        root = buildBST(values);
+      }
+
+      let depth = 0;
+      if (method === "recursive") {
+        depth = countLevelsRecursive(root);
+      } else {
+        depth = countLevelsIterative(root);
+      }
+
+      // Simulate ms based on depth
+      const simulatedMs = depth === 0 ? '0.00' : (depth * 60000).toFixed(2);
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = `
+        Tree Depth: ${depth} Levels<br>
+        Simulated Time: ${simulatedMs} ms
+      `;
+    }
+  </script>
+</body>
+</html>
